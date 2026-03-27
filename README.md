@@ -4,7 +4,7 @@
 
 A standalone CLI and Web tool for QA test management and execution. Manage projects, features, scripts, suites, environments, and test runs — all stored locally in SQLite.
 
-Built with Python, Click, and Rich. Supports browser test recording via Playwright codegen.
+Built with Python, Click, and Rich. Harnessing the power of Playwright for browser test recording and execution.
 
 ## Run with Docker Compose
 

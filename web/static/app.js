@@ -85,11 +85,8 @@ function renderSidebar() {
   const logo = document.getElementById('sidebar-logo')
   logo.innerHTML = `
     <div class="logo-wrap">
-      <div class="logo-icon">QA</div>
-      <div>
-        <div class="logo-text">QAClan</div>
-        <div class="logo-tag">Local</div>
-      </div>
+      <img class="logo-icon" src="logo.png" alt="QAClan">
+      <div class="logo-tag">community</div>
     </div>`
 
   const nav = document.getElementById('sidebar-nav')

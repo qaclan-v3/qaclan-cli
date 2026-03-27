@@ -1,4 +1,8 @@
-# QAClan CLI
+<p align="center">
+  <img src="logo.png" alt="QAClan" width="120">
+</p>
+
+<h1 align="center">QAClan CLI</h1>
 
 A standalone CLI tool for QA test management and execution. Manage projects, features, scripts, suites, environments, and test runs — all stored locally in SQLite.
 

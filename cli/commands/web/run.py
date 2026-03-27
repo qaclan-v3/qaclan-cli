@@ -1,4 +1,5 @@
 import os
+import re
 import subprocess
 import tempfile
 import time
@@ -118,12 +119,21 @@ def web_run(suite_id, env_name, stop_on_fail):
         env.update(env_vars_dict)
 
         try:
+            # Read script and patch headless=False → headless=True for execution
+            with open(item["file_path"], "r") as _sf:
+                _script_src = _sf.read()
+            _script_src = re.sub(r'headless\s*=\s*False', 'headless=True', _script_src)
+            _tmp_script = tempfile.NamedTemporaryFile(suffix=".py", delete=False, prefix="qaclan_run_")
+            _tmp_script.write(_script_src.encode())
+            _tmp_script.close()
+
             result = subprocess.run(
-                ["python", item["file_path"]],
+                ["python", _tmp_script.name],
                 capture_output=True,
                 text=True,
                 env=env,
             )
+            os.unlink(_tmp_script.name)
             duration_ms = int((time.time() - script_start) * 1000)
             duration_s = duration_ms / 1000
             finished_at = datetime.now(timezone.utc).isoformat()

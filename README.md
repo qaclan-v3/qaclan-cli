@@ -29,7 +29,6 @@ Options:
 
 ```bash
 python cli.py serve --port 9000       # Custom port
-python cli.py serve --no-browser      # Don't auto-open browser
 ```
 
 ## Data Storage

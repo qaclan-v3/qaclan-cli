@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="logo.png" alt="QAClan" width="280">
+  <img src="logo.png" alt="QAClan" width="500">
 </p>
 
 A standalone CLI and Web tool for QA test management and execution. Manage projects, features, scripts, suites, environments, and test runs — all stored locally in SQLite.

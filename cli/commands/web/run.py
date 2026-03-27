@@ -1,5 +1,6 @@
 import os
 import subprocess
+import tempfile
 import time
 
 import click
@@ -85,6 +86,14 @@ def web_run(suite_id, env_name, stop_on_fail):
     run_start = time.time()
     stopped = False
 
+    # Create shared storage state file for session persistence across scripts
+    storage_state_file = tempfile.NamedTemporaryFile(suffix=".json", delete=False, prefix="qaclan_state_")
+    storage_state_path = storage_state_file.name
+    storage_state_file.close()
+    # Remove the empty file so first script starts fresh
+    os.unlink(storage_state_path)
+    env_vars_dict["QACLAN_STORAGE_STATE"] = storage_state_path
+
     for i, item in enumerate(items):
         if stopped:
             # Mark remaining as SKIPPED
@@ -154,6 +163,10 @@ def web_run(suite_id, env_name, stop_on_fail):
             )
             if stop_on_fail:
                 stopped = True
+
+    # Clean up storage state file
+    if os.path.exists(storage_state_path):
+        os.unlink(storage_state_path)
 
     # Finalize suite run
     total_duration = time.time() - run_start

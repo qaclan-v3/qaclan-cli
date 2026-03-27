@@ -8,6 +8,7 @@ from rich.table import Table
 
 from cli.config import get_active_project, SCRIPTS_DIR
 from cli.db import get_conn, generate_id
+from cli.script_processor import inject_storage_state
 
 console = Console()
 
@@ -98,7 +99,12 @@ def script_import(file_path, name, feature_id):
     script_id = generate_id("script")
     dest = os.path.join(SCRIPTS_DIR, f"{script_id}.py")
     os.makedirs(SCRIPTS_DIR, exist_ok=True)
-    shutil.copy2(file_path, dest)
+
+    # Post-process to inject shared session support
+    with open(file_path, "r") as f:
+        raw_script = f.read()
+    with open(dest, "w") as f:
+        f.write(inject_storage_state(raw_script))
 
     now = datetime.now(timezone.utc).isoformat()
     conn.execute(
@@ -110,6 +116,40 @@ def script_import(file_path, name, feature_id):
     console.print(f"[green]✓[/green] Script imported: {name} [{script_id}]")
     console.print(f"  Feature: {feat['name']}")
     console.print(f"  File: {dest}")
+
+
+@script.command("patch")
+def script_patch():
+    """Patch all existing scripts to support shared browser sessions."""
+    proj = get_active_project(console)
+    if not proj:
+        return
+    conn = get_conn()
+    rows = conn.execute(
+        "SELECT id, name, file_path FROM scripts WHERE project_id = ? AND channel = 'web'",
+        (proj["id"],),
+    ).fetchall()
+    if not rows:
+        console.print("No web scripts to patch.")
+        return
+    patched = 0
+    skipped = 0
+    for r in rows:
+        if not os.path.exists(r["file_path"]):
+            console.print(f"[yellow]⚠[/yellow] File missing: {r['name']} [{r['id']}]")
+            skipped += 1
+            continue
+        with open(r["file_path"], "r") as f:
+            content = f.read()
+        if "QACLAN_STORAGE_STATE" in content:
+            skipped += 1
+            continue
+        processed = inject_storage_state(content)
+        with open(r["file_path"], "w") as f:
+            f.write(processed)
+        patched += 1
+        console.print(f"[green]✓[/green] Patched: {r['name']} [{r['id']}]")
+    console.print(f"\nPatched: {patched}  Skipped (already patched or missing): {skipped}")
 
 
 @script.command("delete")

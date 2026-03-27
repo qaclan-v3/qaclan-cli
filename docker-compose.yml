@@ -1,0 +1,10 @@
+services:
+  qaclan:
+    build: .
+    ports:
+      - "7823:7823"
+    volumes:
+      - qaclan-data:/root/.qaclan
+
+volumes:
+  qaclan-data:

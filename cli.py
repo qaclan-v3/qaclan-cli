@@ -36,5 +36,25 @@ from cli.commands.runs import run_show
 run_group.add_command(run_show, "show")
 
 
+@qaclan.command()
+@click.option('--port', default=7823, help='Port to run on')
+@click.option('--host', default='127.0.0.1', help='Host to bind to (use 0.0.0.0 for Docker)')
+@click.option('--no-browser', is_flag=True, help='Do not open browser automatically')
+def serve(port, host, no_browser):
+    """Start the QAClan web UI."""
+    import webbrowser
+    import threading
+    from rich.console import Console
+    from web.server import create_app
+
+    console = Console()
+    app = create_app()
+    url = f'http://localhost:{port}'
+    console.print(f'[green]QAClan UI running at {url}[/green] — Press Ctrl+C to stop')
+    if not no_browser:
+        threading.Timer(1.0, lambda: webbrowser.open(url)).start()
+    app.run(host=host, port=port, debug=False)
+
+
 if __name__ == "__main__":
     qaclan()

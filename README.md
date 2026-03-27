@@ -4,7 +4,61 @@ A standalone CLI tool for QA test management and execution. Manage projects, fea
 
 Built with Python, Click, and Rich. Supports browser test recording via Playwright codegen.
 
-## Install
+## Run with Docker Compose
+
+The fastest way to get started. Requires [Docker](https://docs.docker.com/get-docker/) installed.
+
+```bash
+docker compose up
+```
+
+This builds the image, installs all dependencies (including Playwright + Chromium), and starts the web UI at `http://localhost:7823`.
+
+Data is persisted in a Docker volume (`qaclan-data`), so your projects and runs survive restarts.
+
+To run CLI commands inside the container:
+
+```bash
+docker compose exec qaclan python cli.py project create "MyApp"
+docker compose exec qaclan python cli.py web feature create "Login"
+docker compose exec qaclan python cli.py status
+```
+
+To stop:
+
+```bash
+docker compose down
+```
+
+## Web UI
+
+The web UI provides a browser-based interface for managing projects, features, scripts, suites, environments, and viewing run results.
+
+### Start the web UI
+
+```bash
+# If running locally
+python cli.py serve
+
+# Custom port
+python cli.py serve --port 9000
+
+# Without auto-opening the browser
+python cli.py serve --no-browser
+```
+
+Open `http://localhost:7823` (or your custom port) in your browser.
+
+### Start from a standalone binary
+
+```bash
+bash build.sh
+./dist/qaclan serve
+```
+
+## CLI Setup and Usage
+
+### 1. Install dependencies
 
 ```bash
 python3 -m venv venv
@@ -12,26 +66,33 @@ source venv/bin/activate
 pip install -r requirements.txt
 
 # For browser recording support
-pip install playwright
 playwright install chromium
 ```
 
-## Quick Start
+### 2. Create a project
 
 ```bash
-# Create a project
 python cli.py project create "MyApp"
+```
 
-# Create a feature and record a test
+### 3. Create a feature and record a test
+
+```bash
 python cli.py web feature create "Login"
 python cli.py web record --feature feat_abc123 --name "Verify successful login"
+```
 
-# Set up an environment
+### 4. Set up an environment
+
+```bash
 python cli.py env create staging
 python cli.py env set staging BASE_URL https://staging.example.com
 python cli.py env set staging PASSWORD secret123 --secret
+```
 
-# Create a suite, add scripts, and run
+### 5. Create a suite, add scripts, and run
+
+```bash
 python cli.py web suite create "Smoke Suite"
 python cli.py web suite add --suite suite_abc123 --script script_abc123
 python cli.py web run --suite suite_abc123 --env staging
@@ -119,9 +180,9 @@ All data is stored locally at `~/.qaclan/`:
 
 ```
 ~/.qaclan/
-├── qaclan.db      ← SQLite database
-├── scripts/       ← Recorded/imported script files
-└── config.json    ← Active project setting
+├── qaclan.db      <- SQLite database
+├── scripts/       <- Recorded/imported script files
+└── config.json    <- Active project setting
 ```
 
 ## Build

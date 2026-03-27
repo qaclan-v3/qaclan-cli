@@ -1,22 +1,25 @@
 import os
 import sqlite3
+import threading
 import uuid
 
 from cli.config import QACLAN_DIR, ensure_dirs
 
 DB_PATH = os.path.join(QACLAN_DIR, "qaclan.db")
 
-_conn = None
+_local = threading.local()
 
 
 def get_conn():
-    global _conn
-    if _conn is None:
+    conn = getattr(_local, 'conn', None)
+    if conn is None:
         ensure_dirs()
-        _conn = sqlite3.connect(DB_PATH)
-        _conn.row_factory = sqlite3.Row
-        _conn.execute("PRAGMA foreign_keys = ON")
-    return _conn
+        conn = sqlite3.connect(DB_PATH, timeout=10)
+        conn.row_factory = sqlite3.Row
+        conn.execute("PRAGMA journal_mode = WAL")
+        conn.execute("PRAGMA foreign_keys = ON")
+        _local.conn = conn
+    return conn
 
 
 def generate_id(prefix):

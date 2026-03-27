@@ -1,10 +1,8 @@
 <p align="center">
   <img src="logo.png" alt="QAClan" width="280">
-  <br>
-  <sub align="right"><b>CLI</b></sub>
 </p>
 
-A standalone CLI tool for QA test management and execution. Manage projects, features, scripts, suites, environments, and test runs — all stored locally in SQLite.
+A standalone CLI and Web tool for QA test management and execution. Manage projects, features, scripts, suites, environments, and test runs — all stored locally in SQLite.
 
 Built with Python, Click, and Rich. Supports browser test recording via Playwright codegen.
 

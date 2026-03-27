@@ -103,23 +103,8 @@ def delete_project(project_id):
             if s["file_path"] and os.path.exists(s["file_path"]):
                 os.unlink(s["file_path"])
 
-        # Cascade delete in dependency order
-        pid = (project_id,)
-        conn.execute("DELETE FROM step_runs WHERE script_run_id IN "
-                     "(SELECT id FROM script_runs WHERE suite_run_id IN "
-                     "(SELECT id FROM suite_runs WHERE project_id = ?))", pid)
-        conn.execute("DELETE FROM script_runs WHERE suite_run_id IN "
-                     "(SELECT id FROM suite_runs WHERE project_id = ?)", pid)
-        conn.execute("DELETE FROM suite_runs WHERE project_id = ?", pid)
-        conn.execute("DELETE FROM suite_items WHERE suite_id IN "
-                     "(SELECT id FROM suites WHERE project_id = ?)", pid)
-        conn.execute("DELETE FROM suites WHERE project_id = ?", pid)
-        conn.execute("DELETE FROM scripts WHERE project_id = ?", pid)
-        conn.execute("DELETE FROM env_vars WHERE environment_id IN "
-                     "(SELECT id FROM environments WHERE project_id = ?)", pid)
-        conn.execute("DELETE FROM environments WHERE project_id = ?", pid)
-        conn.execute("DELETE FROM features WHERE project_id = ?", pid)
-        conn.execute("DELETE FROM projects WHERE id = ?", pid)
+        # ON DELETE CASCADE handles all child tables
+        conn.execute("DELETE FROM projects WHERE id = ?", (project_id,))
         conn.commit()
 
         # Clear active project if it was this one

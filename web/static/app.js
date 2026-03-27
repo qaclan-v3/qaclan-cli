@@ -144,7 +144,8 @@ async function renderTopbar() {
         ${projects.map(p => `
           <div class="project-dropdown-item ${state.activeProject?.id===p.id?'active':''}"
                onclick="switchProject('${p.id}')">
-            ${state.activeProject?.id===p.id ? '\u25CF ' : '\u25CB '} ${escHtml(p.name)}
+            <span>${state.activeProject?.id===p.id ? '\u25CF ' : '\u25CB '} ${escHtml(p.name)}</span>
+            <span class="project-delete-btn" onclick="event.stopPropagation();deleteProjectPrompt('${p.id}','${escHtml(p.name)}')" title="Delete">\u2715</span>
           </div>`).join('')}
         <div class="project-dropdown-divider"></div>
         <div class="project-dropdown-item project-dropdown-new" onclick="createProjectPrompt()">
@@ -166,6 +167,26 @@ async function switchProject(id) {
   document.getElementById('project-dropdown').classList.add('hidden')
   await renderTopbar()
   await routes[state.page]()
+}
+
+async function deleteProjectPrompt(id, name) {
+  document.getElementById('project-dropdown').classList.add('hidden')
+  showModal('Delete Project', `
+    <p>Delete project <strong>"${name}"</strong> and all its data?</p>
+    <p class="text-muted mt-4">This will remove all features, scripts, suites, environments, and run history. This action cannot be undone.</p>`, [
+    { label: 'Cancel', cls: 'btn-ghost', action: closeModal },
+    { label: 'Delete', cls: 'btn-danger', action: async () => {
+      const res = await api('DELETE', '/projects/' + id)
+      if (res.ok === false) { toast(res.error, 'error'); return }
+      if (state.activeProject?.id === id) {
+        state.activeProject = null
+      }
+      closeModal()
+      renderTopbar()
+      await routes[state.page]()
+      toast('Project deleted')
+    }}
+  ])
 }
 
 async function createProjectPrompt() {

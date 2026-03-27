@@ -257,10 +257,21 @@ body {
   transition: all 0.1s ease;
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 8px;
 }
 .project-dropdown-item:hover { background: var(--bg-elevated); color: var(--text-primary); }
 .project-dropdown-item.active { color: #93c5fd; }
+.project-delete-btn {
+  font-size: 11px;
+  color: var(--text-muted);
+  opacity: 0;
+  padding: 2px 4px;
+  border-radius: 4px;
+  transition: all 0.1s;
+}
+.project-dropdown-item:hover .project-delete-btn { opacity: 1; }
+.project-delete-btn:hover { color: var(--danger); background: rgba(239,68,68,0.1); }
 .project-dropdown-divider { height: 1px; background: var(--border-subtle); margin: 4px 0; }
 .project-dropdown-new { color: var(--accent) !important; font-weight: 500; }
 

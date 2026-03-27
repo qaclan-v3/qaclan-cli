@@ -1,9 +1,11 @@
+import os
+
 import click
 from datetime import datetime, timezone
 from rich.console import Console
 from rich.table import Table
 
-from cli.config import get_active_project, set_active_project_id
+from cli.config import get_active_project, set_active_project_id, get_active_project_id
 from cli.db import get_conn, generate_id
 
 console = Console()
@@ -67,3 +69,36 @@ def project_show():
     if not proj:
         return
     console.print(f"Active project: {proj['name']} [{proj['id']}]")
+
+
+@project.command("delete")
+@click.argument("project_id")
+def project_delete(project_id):
+    """Delete a project and all its data."""
+    conn = get_conn()
+    row = conn.execute("SELECT * FROM projects WHERE id = ?", (project_id,)).fetchone()
+    if not row:
+        console.print(f"[red]Project {project_id} not found. Run: qaclan project list[/red]")
+        return
+
+    if not click.confirm(f'Delete project "{row["name"]}" and all its data? This cannot be undone'):
+        console.print("[yellow]⚠ Cancelled[/yellow]")
+        return
+
+    # Delete script files from disk
+    scripts = conn.execute(
+        "SELECT file_path FROM scripts WHERE project_id = ?", (project_id,)
+    ).fetchall()
+    for s in scripts:
+        if s["file_path"] and os.path.exists(s["file_path"]):
+            os.unlink(s["file_path"])
+
+    # Cascade delete — ON DELETE CASCADE handles child tables
+    conn.execute("DELETE FROM projects WHERE id = ?", (project_id,))
+    conn.commit()
+
+    # Clear active project if it was this one
+    if get_active_project_id() == project_id:
+        set_active_project_id(None)
+
+    console.print(f"[green]✓[/green] Project deleted: {row['name']}")

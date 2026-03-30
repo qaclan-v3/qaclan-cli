@@ -21,9 +21,9 @@ Data is persisted in a Docker volume (`qaclan-data`), so your projects and runs 
 To run CLI commands inside the container:
 
 ```bash
-docker compose exec qaclan python cli.py project create "MyApp"
-docker compose exec qaclan python cli.py web feature create "Login"
-docker compose exec qaclan python cli.py status
+docker compose exec qaclan qactl project create "MyApp"
+docker compose exec qaclan qactl web feature create "Login"
+docker compose exec qaclan qactl status
 ```
 
 To stop:
@@ -40,13 +40,13 @@ The web UI provides a browser-based interface for managing projects, features, s
 
 ```bash
 # If running locally
-python cli.py serve
+qactl serve
 
 # Custom port
-python cli.py serve --port 9000
+qactl serve --port 9000
 
 # Without auto-opening the browser
-python cli.py serve --no-browser
+qactl serve --no-browser
 ```
 
 Open `http://localhost:7823` (or your custom port) in your browser.
@@ -74,30 +74,30 @@ playwright install chromium
 ### 2. Create a project
 
 ```bash
-python cli.py project create "MyApp"
+qactl project create "MyApp"
 ```
 
 ### 3. Create a feature and record a test
 
 ```bash
-python cli.py web feature create "Login"
-python cli.py web record --feature feat_abc123 --name "Verify successful login"
+qactl web feature create "Login"
+qactl web record --feature feat_abc123 --name "Verify successful login"
 ```
 
 ### 4. Set up an environment
 
 ```bash
-python cli.py env create staging
-python cli.py env set staging BASE_URL https://staging.example.com
-python cli.py env set staging PASSWORD secret123 --secret
+qactl env create staging
+qactl env set staging BASE_URL https://staging.example.com
+qactl env set staging PASSWORD secret123 --secret
 ```
 
 ### 5. Create a suite, add scripts, and run
 
 ```bash
-python cli.py web suite create "Smoke Suite"
-python cli.py web suite add --suite suite_abc123 --script script_abc123
-python cli.py web run --suite suite_abc123 --env staging
+qactl web suite create "Smoke Suite"
+qactl web suite add --suite suite_abc123 --script script_abc123
+qactl web run --suite suite_abc123 --env staging
 ```
 
 ## Commands

@@ -1,0 +1,40 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "qaclan-cli"
+version = "0.1.0"
+description = "QAClan — CLI and Web tool for QA test management and execution"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [{name = "QAClan"}]
+
+dependencies = [
+  "click==8.3.1",
+  "rich==14.3.3",
+  "playwright==1.58.0",
+  "flask>=3.0.0",
+]
+
+[project.optional-dependencies]
+build = ["nuitka==4.0.7"]
+dev = [
+  "pytest>=8.0.0",
+  "ruff>=0.6.0",
+]
+
+[project.scripts]
+qactl = "qaclan_cli:qaclan"
+
+[tool.setuptools]
+py-modules = ["qaclan_cli"]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["cli*", "web*"]
+
+[tool.setuptools.package-data]
+web = ["static/**/*"]

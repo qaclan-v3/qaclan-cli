@@ -6,7 +6,59 @@ A standalone CLI and Web tool for QA test management and execution. Manage proje
 
 Built with Python, Click, and Rich. Harnessing the power of Playwright for browser test recording and execution.
 
-## Getting Started
+## Run with Docker Compose
+
+The fastest way to get started. Requires [Docker](https://docs.docker.com/get-docker/) installed.
+
+```bash
+docker compose up
+```
+
+This builds the image, installs all dependencies (including Playwright + Chromium), and starts the web UI at `http://localhost:7823`.
+
+Data is persisted in a Docker volume (`qaclan-data`), so your projects and runs survive restarts.
+
+To run CLI commands inside the container:
+
+```bash
+docker compose exec qaclan qactl project create "MyApp"
+docker compose exec qaclan qactl web feature create "Login"
+docker compose exec qaclan qactl status
+```
+
+To stop:
+
+```bash
+docker compose down
+```
+
+## Web UI
+
+The web UI provides a browser-based interface for managing projects, features, scripts, suites, environments, and viewing run results.
+
+### Start the web UI
+
+```bash
+# If running locally
+qactl serve
+
+# Custom port
+qactl serve --port 9000
+
+# Without auto-opening the browser
+qactl serve --no-browser
+```
+
+Open `http://localhost:7823` (or your custom port) in your browser.
+
+### Start from a standalone binary
+
+```bash
+bash build.sh
+./dist/qaclan serve
+```
+
+## CLI Setup and Usage
 
 ### 1. Install dependencies
 
@@ -14,22 +66,115 @@ Built with Python, Click, and Rich. Harnessing the power of Playwright for brows
 python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
+
+# For browser recording support
 playwright install chromium
 ```
 
-### 2. Start the web UI
+### 2. Create a project
 
 ```bash
-python cli.py serve
+qactl project create "MyApp"
 ```
 
-Open `http://localhost:7823` in your browser.
-
-Options:
+### 3. Create a feature and record a test
 
 ```bash
-python cli.py serve --port 9000       # Custom port
+qactl web feature create "Login"
+qactl web record --feature feat_abc123 --name "Verify successful login"
 ```
+
+### 4. Set up an environment
+
+```bash
+qactl env create staging
+qactl env set staging BASE_URL https://staging.example.com
+qactl env set staging PASSWORD secret123 --secret
+```
+
+### 5. Create a suite, add scripts, and run
+
+```bash
+qactl web suite create "Smoke Suite"
+qactl web suite add --suite suite_abc123 --script script_abc123
+qactl web run --suite suite_abc123 --env staging
+```
+
+## Commands
+
+### Project
+
+| Command | Description |
+|---------|-------------|
+| `project create "name"` | Create a project and set it as active |
+| `project list` | List all projects |
+| `project use <id>` | Switch active project |
+| `project show` | Show active project |
+
+### Environment
+
+| Command | Description |
+|---------|-------------|
+| `env create <name>` | Create an environment |
+| `env set <name> KEY value` | Set a variable (`--secret` to mask) |
+| `env list [name]` | List environments and variables |
+| `env delete <name>` | Delete an environment |
+
+### Web Features
+
+| Command | Description |
+|---------|-------------|
+| `web feature create "name"` | Create a web feature |
+| `web feature list` | List features with script counts |
+| `web feature delete <id>` | Delete a feature |
+
+### Web Recording
+
+| Command | Description |
+|---------|-------------|
+| `web record --feature <id> --name "name"` | Record a browser test via Playwright codegen |
+| `web record --feature <id> --name "name" --url <url>` | Record with a start URL |
+
+### Web Scripts
+
+| Command | Description |
+|---------|-------------|
+| `web script list [--feature <id>]` | List scripts, optionally filtered by feature |
+| `web script show <id>` | Print script content |
+| `web script import <file> --name "name" --feature <id>` | Import an existing script file |
+| `web script delete <id>` | Delete a script |
+
+### Web Suites
+
+| Command | Description |
+|---------|-------------|
+| `web suite create "name"` | Create a test suite |
+| `web suite add --suite <id> --script <id>` | Add a script to a suite |
+| `web suite reorder --suite <id> --scripts id1,id2,id3` | Reorder scripts |
+| `web suite remove --suite <id> --script <id>` | Remove a script from a suite |
+| `web suite show --suite <id>` | Show suite details |
+| `web suite list` | List all suites |
+| `web suite delete <id>` | Delete a suite |
+
+### Web Execution
+
+| Command | Description |
+|---------|-------------|
+| `web run --suite <id> --env <name>` | Run a suite with environment variables |
+| `web run --suite <id>` | Run without environment |
+| `web run --suite <id> --env <name> --stop-on-fail` | Stop on first failure |
+
+### Status & Run History
+
+| Command | Description |
+|---------|-------------|
+| `status` | Show full project overview by channel |
+| `runs [--suite <id>]` | List run history |
+| `run show <id>` | Show detailed results for a run |
+
+### API (Coming Soon)
+
+The `api` command group is scaffolded but not yet implemented. All subcommands print a "coming soon" message.
 
 ## Data Storage
 
@@ -42,6 +187,12 @@ All data is stored locally at `~/.qaclan/`:
 └── config.json    <- Active project setting
 ```
 
-## License
+## Build
 
-[Business Source License 1.1](LICENSE)
+Compile into a standalone binary using Nuitka:
+
+```bash
+pip install nuitka
+bash build.sh
+# Output: dist/qaclan
+```

@@ -10,12 +10,19 @@ RUN apt-get update && \
     libpango-1.0-0 libcairo2 libasound2 libxshmfence1 libx11-xcb1 \
     && rm -rf /var/lib/apt/lists/*
 
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt && \
-    playwright install --with-deps chromium
+# COPY requirements.txt pyproject.toml ./
+
+# RUN pip install --no-cache-dir -r requirements.txt && \
+#     pip install --no-cache-dir -e . && \
+#     playwright install --with-deps chromium
 
 COPY . .
 
+RUN pip install --no-cache-dir -U pip && \
+    pip install --no-cache-dir -e . && \
+    python -m playwright install --with-deps chromium
+
+
 EXPOSE 7823
 
-CMD ["python", "cli.py", "serve", "--port", "7823", "--host", "0.0.0.0", "--no-browser"]
+CMD ["qactl", "serve", "--port", "7823", "--host", "0.0.0.0", "--no-browser"]
